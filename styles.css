@@ -5,6 +5,15 @@
   --line: #d8dde6;
   --surface: #f6f8fb;
   --panel: #ffffff;
+  --page-start: #f7faf8;
+  --page-mid: #eef4f8;
+  --page-end: #f8f4ef;
+  --reader-bg: #fbf7ef;
+  --reader-text: #18212f;
+  --reader-context: rgba(102, 112, 133, 0.72);
+  --focus-letter: #be123c;
+  --reader-font: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --reader-size: 72px;
   --accent: #0f766e;
   --accent-strong: #115e59;
   --warm: #d97706;
@@ -23,7 +32,7 @@ body {
   color: var(--ink);
   background:
     radial-gradient(circle at 18% 18%, rgba(15, 118, 110, 0.12), transparent 28%),
-    linear-gradient(135deg, #f7faf8 0%, #eef4f8 52%, #f8f4ef 100%);
+    linear-gradient(135deg, var(--page-start) 0%, var(--page-mid) 52%, var(--page-end) 100%);
 }
 
 button,
@@ -122,7 +131,7 @@ h1 {
   border: 1px solid var(--line);
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.78), rgba(255, 255, 255, 0.94)),
-    repeating-linear-gradient(90deg, rgba(15, 118, 110, 0.07), rgba(15, 118, 110, 0.07) 1px, transparent 1px, transparent 90px);
+    linear-gradient(0deg, var(--reader-bg), var(--reader-bg));
   display: grid;
   place-items: center;
   padding: 38px;
@@ -134,7 +143,9 @@ h1 {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: linear-gradient(90deg, rgba(255, 255, 255, 0.72), transparent 34%, transparent 66%, rgba(255, 255, 255, 0.72));
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.24), transparent 34%, transparent 66%, rgba(255, 255, 255, 0.24)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.16), transparent 28%, transparent 72%, rgba(255, 255, 255, 0.16));
 }
 
 .word-display {
@@ -146,12 +157,27 @@ h1 {
   align-items: center;
   justify-content: center;
   text-align: center;
-  color: var(--ink);
-  font-size: clamp(2.4rem, 8vw, 6.4rem);
+  color: var(--reader-text);
+  font-family: var(--reader-font);
+  font-size: clamp(36px, var(--reader-size), 128px);
   font-weight: 850;
   line-height: 1.05;
   letter-spacing: 0;
   overflow-wrap: anywhere;
+}
+
+.word-token {
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.word-space {
+  display: inline-block;
+  width: 0.36em;
+}
+
+.focus-letter {
+  color: var(--focus-letter);
 }
 
 .context {
@@ -159,7 +185,8 @@ h1 {
   z-index: 1;
   left: 30px;
   right: 30px;
-  color: rgba(102, 112, 133, 0.68);
+  color: var(--reader-context);
+  font-family: var(--reader-font);
   font-size: clamp(0.95rem, 2vw, 1.15rem);
   text-align: center;
   min-height: 28px;
@@ -260,7 +287,8 @@ input[type="range"] {
 
 textarea,
 select,
-input[type="number"] {
+input[type="number"],
+input[type="color"] {
   width: 100%;
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -277,23 +305,34 @@ textarea {
 }
 
 select,
-input[type="number"] {
+input[type="number"],
+input[type="color"] {
   min-height: 44px;
   padding: 0 12px;
 }
 
+input[type="color"] {
+  padding: 4px;
+}
+
 textarea:focus,
 select:focus,
-input[type="number"]:focus {
+input[type="number"]:focus,
+input[type="color"]:focus {
   border-color: var(--accent);
   box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.12);
 }
 
 .setting-grid,
-.stats-grid {
+.stats-grid,
+.color-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
+}
+
+.color-grid {
+  grid-template-columns: repeat(3, 1fr);
 }
 
 .slider-block {
@@ -323,6 +362,30 @@ input[type="number"]:focus {
 
 .stats-grid {
   margin-top: auto;
+}
+
+.suggestion-panel {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 14px;
+  background: var(--surface);
+}
+
+.suggestion-panel h2 {
+  margin: 0 0 10px;
+  font-size: 1rem;
+}
+
+.suggestion-panel ul {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.suggestion-panel li + li {
+  margin-top: 6px;
 }
 
 .stats-grid div {
@@ -395,6 +458,10 @@ input[type="number"]:focus {
   }
 
   .setting-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .color-grid {
     grid-template-columns: 1fr;
   }
 }

@@ -81,6 +81,51 @@
           <input id="comprehensionInput" type="range" min="0" max="100" value="70" />
         </div>
 
+        <div class="setting-grid">
+          <label class="field-block">
+            <span>Yazı tipi</span>
+            <select id="fontFamilyInput">
+              <option value="system" selected>Sistem</option>
+              <option value="serif">Serif</option>
+              <option value="mono">Mono</option>
+              <option value="dyslexic">Disleksi dostu</option>
+            </select>
+          </label>
+          <label class="field-block">
+            <span>Renk takımı</span>
+            <select id="themeInput">
+              <option value="paper" selected>Yumuşak kağıt</option>
+              <option value="warm">Sıcak krem</option>
+              <option value="sage">Adaçayı</option>
+              <option value="night">Gece</option>
+              <option value="custom">Özel</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="slider-block">
+          <div class="slider-label">
+            <span>Yazı büyüklüğü</span>
+            <strong id="fontSizeValue">72 px</strong>
+          </div>
+          <input id="fontSizeInput" type="range" min="36" max="128" step="2" value="72" />
+        </div>
+
+        <div class="color-grid">
+          <label class="field-block">
+            <span>Arka plan</span>
+            <input id="backgroundColorInput" type="color" value="#fbf7ef" />
+          </label>
+          <label class="field-block">
+            <span>Yazı rengi</span>
+            <input id="textColorInput" type="color" value="#18212f" />
+          </label>
+          <label class="field-block">
+            <span>Odak harfi</span>
+            <input id="focusColorInput" type="color" value="#be123c" />
+          </label>
+        </div>
+
         <div class="toggle-row">
           <label>
             <input id="semanticPauseInput" type="checkbox" checked />
@@ -90,7 +135,24 @@
             <input id="punctuationPauseInput" type="checkbox" checked />
             <span>Noktalama duraklaması</span>
           </label>
+          <label>
+            <input id="focusLetterInput" type="checkbox" checked />
+            <span>Odak harfini vurgula</span>
+          </label>
+          <label>
+            <input id="breathingPauseInput" type="checkbox" checked />
+            <span>Cümle nefesi</span>
+          </label>
         </div>
+
+        <section class="suggestion-panel" aria-label="Geliştirme önerileri">
+          <h2>Sonraki özellikler</h2>
+          <ul>
+            <li>Kısa anlama soruları ile hızın otomatik kalibre edilmesi</li>
+            <li>Zor kelimelerde kişisel sözlük ve tekrar listesi</li>
+            <li>Göz yorgunluğu için oturum süresi ve mola önerisi</li>
+          </ul>
+        </section>
 
         <div class="stats-grid" aria-label="Okuma istatistikleri">
           <div>

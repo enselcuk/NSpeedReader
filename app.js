@@ -19,11 +19,66 @@ const wpmInput = document.getElementById("wpmInput");
 const groupSize = document.getElementById("groupSize");
 const comprehensionInput = document.getElementById("comprehensionInput");
 const comprehensionValue = document.getElementById("comprehensionValue");
+const fontFamilyInput = document.getElementById("fontFamilyInput");
+const themeInput = document.getElementById("themeInput");
+const fontSizeInput = document.getElementById("fontSizeInput");
+const fontSizeValue = document.getElementById("fontSizeValue");
+const backgroundColorInput = document.getElementById("backgroundColorInput");
+const textColorInput = document.getElementById("textColorInput");
+const focusColorInput = document.getElementById("focusColorInput");
 const semanticPauseInput = document.getElementById("semanticPauseInput");
 const punctuationPauseInput = document.getElementById("punctuationPauseInput");
+const focusLetterInput = document.getElementById("focusLetterInput");
+const breathingPauseInput = document.getElementById("breathingPauseInput");
 const wordCount = document.getElementById("wordCount");
 const durationLabel = document.getElementById("durationLabel");
 const chunkCount = document.getElementById("chunkCount");
+
+const fontStacks = {
+  system: `Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`,
+  serif: `Georgia, "Times New Roman", serif`,
+  mono: `"SFMono-Regular", Consolas, "Liberation Mono", monospace`,
+  dyslexic: `"Trebuchet MS", Verdana, Arial, sans-serif`,
+};
+
+const themes = {
+  paper: {
+    pageStart: "#f7faf8",
+    pageMid: "#eef4f8",
+    pageEnd: "#f8f4ef",
+    background: "#fbf7ef",
+    text: "#18212f",
+    focus: "#be123c",
+    context: "rgba(102, 112, 133, 0.72)",
+  },
+  warm: {
+    pageStart: "#f8f1e8",
+    pageMid: "#f5eadc",
+    pageEnd: "#eef3ee",
+    background: "#fff4df",
+    text: "#2b2118",
+    focus: "#0f766e",
+    context: "rgba(92, 76, 59, 0.72)",
+  },
+  sage: {
+    pageStart: "#eef6f0",
+    pageMid: "#e3efe8",
+    pageEnd: "#f6f4ea",
+    background: "#eef7ed",
+    text: "#14231a",
+    focus: "#b45309",
+    context: "rgba(70, 93, 78, 0.76)",
+  },
+  night: {
+    pageStart: "#111827",
+    pageMid: "#172033",
+    pageEnd: "#20212b",
+    background: "#101820",
+    text: "#edf2ec",
+    focus: "#fbbf24",
+    context: "rgba(210, 221, 214, 0.62)",
+  },
+};
 
 let chunks = [];
 let currentIndex = 0;
@@ -90,9 +145,10 @@ function buildChunks() {
 }
 
 function createChunk(words, startIndex) {
+  const rawText = words.join(" ");
   return {
     words,
-    text: words.join(" "),
+    text: rawText,
     startIndex,
     wordCount: words.length,
     lastWord: words[words.length - 1] || "",
@@ -117,6 +173,10 @@ function getDelay(chunk) {
     if (chunk.text.includes("(") || chunk.text.includes(")") || chunk.text.includes("-")) delay += 100 * comprehension;
   }
 
+  if (breathingPauseInput.checked && hasSentenceEnd(chunk.lastWord) && chunk.wordCount >= 2) {
+    delay += 140 + 180 * comprehension;
+  }
+
   return Math.round(clamp(delay, 140, 2200));
 }
 
@@ -138,7 +198,7 @@ function render() {
   const readWords = chunks.slice(0, currentIndex).reduce((sum, item) => sum + item.wordCount, 0) + (chunk ? chunk.wordCount : 0);
   const progress = chunks.length ? Math.round((currentIndex / Math.max(chunks.length - 1, 1)) * 100) : 0;
 
-  wordDisplay.textContent = chunk ? chunk.text : "Metin yok";
+  renderWordDisplay(chunk);
   previousText.textContent = chunks[currentIndex - 1]?.text || "";
   nextText.textContent = chunks[currentIndex + 1]?.text || "";
   positionSlider.value = String(currentIndex);
@@ -154,6 +214,63 @@ function render() {
   positionSlider.disabled = chunks.length === 0;
 
   if (totalWords === 0) positionLabel.textContent = `${readWords} / ${totalWords}`;
+}
+
+function renderWordDisplay(chunk) {
+  wordDisplay.replaceChildren();
+  if (!chunk) {
+    wordDisplay.textContent = "Metin yok";
+    return;
+  }
+
+  chunk.words.forEach((word, index) => {
+    if (index > 0) {
+      const space = document.createElement("span");
+      space.className = "word-space";
+      space.textContent = " ";
+      wordDisplay.append(space);
+    }
+    wordDisplay.append(createWordToken(word));
+  });
+}
+
+function createWordToken(word) {
+  const token = document.createElement("span");
+  token.className = "word-token";
+
+  if (!focusLetterInput.checked) {
+    token.textContent = word;
+    return token;
+  }
+
+  const letters = Array.from(word);
+  const visibleLetters = letters
+    .map((letter, index) => ({ letter, index }))
+    .filter(({ letter }) => /\p{L}|\p{N}/u.test(letter));
+
+  if (visibleLetters.length < 2) {
+    token.textContent = word;
+    return token;
+  }
+
+  const focusVisibleIndex = getFocusIndex(visibleLetters.length);
+  const focusIndex = visibleLetters[focusVisibleIndex].index;
+
+  letters.forEach((letter, index) => {
+    const span = document.createElement("span");
+    span.textContent = letter;
+    if (index === focusIndex) span.className = "focus-letter";
+    token.append(span);
+  });
+
+  return token;
+}
+
+function getFocusIndex(length) {
+  if (length <= 1) return 0;
+  if (length <= 5) return 1;
+  if (length <= 9) return 2;
+  return 3;
 }
 
 function estimateDuration() {
@@ -220,11 +337,75 @@ function reset() {
   render();
 }
 
+function applyReadingStyle() {
+  const root = document.documentElement;
+  const fontSize = `${fontSizeInput.value}px`;
+  root.style.setProperty("--reader-font", fontStacks[fontFamilyInput.value] || fontStacks.system);
+  root.style.setProperty("--reader-size", fontSize);
+  fontSizeValue.textContent = fontSize.replace("px", " px");
+  render();
+}
+
+function applyTheme(themeName = themeInput.value) {
+  const theme = themes[themeName] || {
+    pageStart: backgroundColorInput.value,
+    pageMid: backgroundColorInput.value,
+    pageEnd: backgroundColorInput.value,
+    background: backgroundColorInput.value,
+    text: textColorInput.value,
+    focus: focusColorInput.value,
+    context: mixContextColor(textColorInput.value),
+  };
+  const root = document.documentElement;
+
+  root.style.setProperty("--page-start", theme.pageStart);
+  root.style.setProperty("--page-mid", theme.pageMid);
+  root.style.setProperty("--page-end", theme.pageEnd);
+  root.style.setProperty("--reader-bg", theme.background);
+  root.style.setProperty("--reader-text", theme.text);
+  root.style.setProperty("--focus-letter", theme.focus);
+  root.style.setProperty("--reader-context", theme.context);
+
+  backgroundColorInput.value = theme.background;
+  textColorInput.value = theme.text;
+  focusColorInput.value = theme.focus;
+  render();
+}
+
+function applyCustomTheme() {
+  themeInput.value = "custom";
+  applyTheme("custom");
+}
+
+function mixContextColor(hex) {
+  const rgb = hexToRgb(hex);
+  if (!rgb) return "rgba(102, 112, 133, 0.72)";
+  return `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.62)`;
+}
+
+function hexToRgb(hex) {
+  const match = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  if (!match) return null;
+  return {
+    r: parseInt(match[1], 16),
+    g: parseInt(match[2], 16),
+    b: parseInt(match[3], 16),
+  };
+}
+
 sourceText.addEventListener("input", () => rebuild(true));
 groupSize.addEventListener("change", () => rebuild(true));
 wpmInput.addEventListener("input", render);
 semanticPauseInput.addEventListener("change", render);
 punctuationPauseInput.addEventListener("change", render);
+breathingPauseInput.addEventListener("change", render);
+focusLetterInput.addEventListener("change", render);
+fontFamilyInput.addEventListener("change", applyReadingStyle);
+fontSizeInput.addEventListener("input", applyReadingStyle);
+themeInput.addEventListener("change", () => applyTheme());
+backgroundColorInput.addEventListener("input", applyCustomTheme);
+textColorInput.addEventListener("input", applyCustomTheme);
+focusColorInput.addEventListener("input", applyCustomTheme);
 comprehensionInput.addEventListener("input", () => {
   comprehensionValue.textContent = `${comprehensionInput.value}%`;
   render();
@@ -249,4 +430,6 @@ document.addEventListener("keydown", (event) => {
   if (event.key === "ArrowRight") move(1);
 });
 
+applyTheme("paper");
+applyReadingStyle();
 rebuild(false);
