@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>NSpeedReader</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="reader-panel" aria-label="Okuma paneli">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">NSpeedReader</p>
+            <h1>Akıllı hızlı okuma</h1>
+          </div>
+          <div class="progress-card" aria-label="İlerleme">
+            <span id="progressLabel">0%</span>
+            <div class="progress-track">
+              <div id="progressBar" class="progress-fill"></div>
+            </div>
+          </div>
+        </header>
+
+        <div class="stage" aria-live="polite">
+          <div id="previousText" class="context previous"></div>
+          <div id="wordDisplay" class="word-display">Başlat</div>
+          <div id="nextText" class="context next"></div>
+        </div>
+
+        <div class="timeline">
+          <input id="positionSlider" type="range" min="0" max="0" value="0" aria-label="Konum" />
+          <div class="meta-row">
+            <span id="positionLabel">0 / 0</span>
+            <span id="pauseLabel">Duraklama: 0 ms</span>
+          </div>
+        </div>
+
+        <div class="controls" aria-label="Kontroller">
+          <button id="backBtn" class="icon-button" type="button" title="Geri al" aria-label="Geri al">
+            <span aria-hidden="true">↶</span>
+          </button>
+          <button id="playBtn" class="primary-button" type="button">
+            <span id="playIcon" aria-hidden="true">▶</span>
+            <span id="playText">Oynat</span>
+          </button>
+          <button id="forwardBtn" class="icon-button" type="button" title="İleri al" aria-label="İleri al">
+            <span aria-hidden="true">↷</span>
+          </button>
+          <button id="resetBtn" class="ghost-button" type="button">Sıfırla</button>
+        </div>
+      </section>
+
+      <aside class="settings-panel" aria-label="Ayarlar">
+        <label class="field-block">
+          <span>Metin</span>
+          <textarea id="sourceText" spellcheck="false"></textarea>
+        </label>
+
+        <div class="setting-grid">
+          <label class="field-block">
+            <span>Temel hız</span>
+            <input id="wpmInput" type="number" min="80" max="900" step="10" value="360" />
+          </label>
+          <label class="field-block">
+            <span>Grup boyutu</span>
+            <select id="groupSize">
+              <option value="1">1 kelime</option>
+              <option value="2" selected>2 kelime</option>
+              <option value="3">3 kelime</option>
+              <option value="auto">Otomatik</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="slider-block">
+          <div class="slider-label">
+            <span>Anlama payı</span>
+            <strong id="comprehensionValue">70%</strong>
+          </div>
+          <input id="comprehensionInput" type="range" min="0" max="100" value="70" />
+        </div>
+
+        <div class="toggle-row">
+          <label>
+            <input id="semanticPauseInput" type="checkbox" checked />
+            <span>Anlam duraklaması</span>
+          </label>
+          <label>
+            <input id="punctuationPauseInput" type="checkbox" checked />
+            <span>Noktalama duraklaması</span>
+          </label>
+        </div>
+
+        <div class="stats-grid" aria-label="Okuma istatistikleri">
+          <div>
+            <span>Kelime</span>
+            <strong id="wordCount">0</strong>
+          </div>
+          <div>
+            <span>Süre</span>
+            <strong id="durationLabel">0:00</strong>
+          </div>
+          <div>
+            <span>Parça</span>
+            <strong id="chunkCount">0</strong>
+          </div>
+        </div>
+      </aside>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
