@@ -4,6 +4,8 @@ NSpeedReader is a browser-based speed reading tool. It displays text in short wo
 
 The interface is currently written in Turkish.
 
+You may try it on https://nspeedreader.engin.net.tr/ 
+
 ## Features
 
 - Paste or edit any source text directly in the reader.
