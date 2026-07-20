@@ -1,0 +1,16 @@
+.DS_Store
+Thumbs.db
+
+# Local editor and environment files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Logs
+*.log
+
+# Local static server output
+.cache/
+dist/
+build/
