@@ -27,12 +27,12 @@ You may try it on https://nspeedreader.engin.net.tr/
 
 No build step or package installation is required. This is a static HTML, CSS, and JavaScript project.
 
-To run it locally, open `index.html` in a browser.
+To run it locally, open `public/index.html` in a browser.
 
-You can also serve the folder with any static file server. For example:
+You can also serve the `public` folder with any static file server. For example:
 
 ```sh
-python3 -m http.server 8000
+python3 -m http.server 8000 --directory public
 ```
 
 Then open:
@@ -45,10 +45,12 @@ http://localhost:8000
 
 ```text
 .
-├── index.html    # App markup and controls
-├── styles.css    # Responsive layout and theme styling
-├── app.js        # Reading logic, pacing, controls, and rendering
-└── README.md     # Project documentation
+├── public/
+│   ├── index.html    # App markup and controls
+│   ├── styles.css    # Responsive layout and theme styling
+│   └── app.js        # Reading logic, pacing, controls, and rendering
+├── wrangler.jsonc    # Cloudflare Workers static assets config
+└── README.md         # Project documentation
 ```
 
 ## Usage
