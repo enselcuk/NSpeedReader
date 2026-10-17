@@ -154,12 +154,13 @@ h1 {
   width: 100%;
   min-height: 120px;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: center;
   text-align: center;
   color: var(--reader-text);
   font-family: var(--reader-font);
-  font-size: clamp(36px, var(--reader-size), 128px);
+  font-size: clamp(20px, var(--reader-size), 128px);
   font-weight: 850;
   line-height: 1.05;
   letter-spacing: 0;
@@ -413,6 +414,31 @@ input[type="color"]:focus {
   grid-column: 1 / -1;
 }
 
+.quick-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.quick-bar .ghost-button {
+  min-width: 52px;
+}
+
+.quick-size {
+  min-width: 56px;
+  text-align: center;
+  color: var(--muted);
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.settings-toggle,
+.sheet-header,
+.settings-backdrop {
+  display: none;
+}
+
 @media (max-width: 940px) {
   .app-shell {
     grid-template-columns: 1fr;
@@ -422,8 +448,55 @@ input[type="color"]:focus {
     min-height: 560px;
   }
 
+  .settings-toggle {
+    display: inline-flex;
+    align-items: center;
+    margin-left: auto;
+  }
+
   .settings-panel {
-    min-height: auto;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 20;
+    max-height: 42vh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    border-radius: 16px 16px 0 0;
+    background: var(--panel);
+    transform: translateY(105%);
+    visibility: hidden;
+    transition: transform 220ms ease, visibility 220ms;
+  }
+
+  .settings-open .settings-panel {
+    transform: translateY(0);
+    visibility: visible;
+  }
+
+  .sheet-header {
+    position: sticky;
+    top: -22px;
+    margin: -22px -22px 0;
+    padding: 14px 22px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--panel);
+    border-bottom: 1px solid var(--line);
+    z-index: 1;
+  }
+
+  .settings-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 10;
+    background: transparent;
+  }
+
+  .settings-open .settings-backdrop:not([hidden]) {
+    display: block;
   }
 }
 
@@ -436,6 +509,30 @@ input[type="color"]:focus {
   .reader-panel,
   .settings-panel {
     padding: 16px;
+  }
+
+  .reader-panel {
+    min-height: calc(100vh - 20px);
+    grid-template-rows: auto minmax(200px, 1fr) auto auto auto;
+    gap: 16px;
+  }
+
+  .sheet-header {
+    top: -16px;
+    margin: -16px -16px 0;
+    padding: 12px 16px;
+  }
+
+  .quick-bar {
+    flex-wrap: wrap;
+  }
+
+  h1 {
+    font-size: 1.5rem;
+  }
+
+  .word-space {
+    width: 0.3em;
   }
 
   .topbar {
