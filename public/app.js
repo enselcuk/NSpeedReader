@@ -15,6 +15,10 @@ const playText = document.getElementById("playText");
 const backBtn = document.getElementById("backBtn");
 const forwardBtn = document.getElementById("forwardBtn");
 const resetBtn = document.getElementById("resetBtn");
+const pasteBtn = document.getElementById("pasteBtn");
+const quickPasteBtn = document.getElementById("quickPasteBtn");
+const clearBtn = document.getElementById("clearBtn");
+const textStatus = document.getElementById("textStatus");
 const wpmInput = document.getElementById("wpmInput");
 const groupSize = document.getElementById("groupSize");
 const comprehensionInput = document.getElementById("comprehensionInput");
@@ -34,8 +38,12 @@ const wordCount = document.getElementById("wordCount");
 const durationLabel = document.getElementById("durationLabel");
 const chunkCount = document.getElementById("chunkCount");
 const quickFontSize = document.getElementById("quickFontSize");
-const fontDownBtn = document.getElementById("fontDownBtn");
-const fontUpBtn = document.getElementById("fontUpBtn");
+const quickFontInput = document.getElementById("quickFontInput");
+const quickUrlBtn = document.getElementById("quickUrlBtn");
+const urlForm = document.getElementById("urlForm");
+const urlInput = document.getElementById("urlInput");
+const urlBtn = document.getElementById("urlBtn");
+const toast = document.getElementById("toast");
 const settingsToggle = document.getElementById("settingsToggle");
 const settingsClose = document.getElementById("settingsClose");
 const settingsBackdrop = document.getElementById("settingsBackdrop");
@@ -343,12 +351,81 @@ function reset() {
   render();
 }
 
+let statusTimer = null;
+
+function showStatus(message) {
+  textStatus.textContent = message;
+  toast.textContent = message;
+  toast.hidden = false;
+  window.clearTimeout(statusTimer);
+  statusTimer = window.setTimeout(() => {
+    textStatus.textContent = "";
+    toast.hidden = true;
+  }, 3500);
+}
+
+function setText(text) {
+  stop(false);
+  sourceText.value = text;
+  rebuild(false);
+}
+
+function clearText() {
+  setText("");
+  sourceText.focus();
+  showStatus("Metin temizlendi.");
+}
+
+async function pasteFromClipboard() {
+  let text = "";
+  try {
+    text = await navigator.clipboard.readText();
+  } catch {
+    // Clipboard API unavailable or denied: ask for the text with a native dialog,
+    // which always offers the system paste action.
+    text = window.prompt("Metni buraya yapıştırın:") || "";
+    if (!text.trim()) return;
+  }
+  if (!text.trim()) {
+    showStatus("Panoda metin yok.");
+    return;
+  }
+  setText(text);
+  showStatus("Metin yapıştırıldı.");
+}
+
+async function loadFromUrl(rawUrl) {
+  const value = rawUrl.trim();
+  if (!value) {
+    showStatus("Bir bağlantı girin.");
+    return;
+  }
+  const url = /^https?:\/\//i.test(value) ? value : `https://${value}`;
+  urlBtn.disabled = true;
+  urlBtn.textContent = "Getiriliyor…";
+  try {
+    const response = await fetch(`/api/extract?url=${encodeURIComponent(url)}`);
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || "Makale alınamadı.");
+    setText(data.title ? `${data.title}\n\n${data.text}` : data.text);
+    urlInput.value = "";
+    setSettingsOpen(false);
+    showStatus(`Makale yüklendi: ${wordCount.textContent} kelime.`);
+  } catch (error) {
+    showStatus(error.message || "Makale alınamadı.");
+  } finally {
+    urlBtn.disabled = false;
+    urlBtn.textContent = "Getir";
+  }
+}
+
 function applyReadingStyle() {
   const root = document.documentElement;
   const fontSize = `${fontSizeInput.value}px`;
   root.style.setProperty("--reader-font", fontStacks[fontFamilyInput.value] || fontStacks.system);
   root.style.setProperty("--reader-size", fontSize);
   fontSizeValue.textContent = fontSize.replace("px", " px");
+  quickFontInput.value = fontSizeInput.value;
   quickFontSize.textContent = fontSizeValue.textContent;
   render();
 }
@@ -426,12 +503,9 @@ playBtn.addEventListener("click", togglePlay);
 backBtn.addEventListener("click", () => move(-1));
 forwardBtn.addEventListener("click", () => move(1));
 resetBtn.addEventListener("click", reset);
-
-function stepFontSize(delta) {
-  const next = clamp(Number(fontSizeInput.value) + delta, Number(fontSizeInput.min), Number(fontSizeInput.max));
-  fontSizeInput.value = String(next);
-  applyReadingStyle();
-}
+pasteBtn.addEventListener("click", pasteFromClipboard);
+quickPasteBtn.addEventListener("click", pasteFromClipboard);
+clearBtn.addEventListener("click", clearText);
 
 function setSettingsOpen(open) {
   document.body.classList.toggle("settings-open", open);
@@ -440,8 +514,27 @@ function setSettingsOpen(open) {
   if (open) window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
-fontDownBtn.addEventListener("click", () => stepFontSize(-4));
-fontUpBtn.addEventListener("click", () => stepFontSize(4));
+quickFontInput.addEventListener("input", () => {
+  fontSizeInput.value = quickFontInput.value;
+  applyReadingStyle();
+});
+urlForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+  loadFromUrl(urlInput.value);
+});
+quickUrlBtn.addEventListener("click", () => {
+  setSettingsOpen(true);
+  urlInput.focus();
+});
+// Ctrl/Cmd+V anywhere outside a text field loads the pasted text directly.
+document.addEventListener("paste", (event) => {
+  if (event.target.matches("textarea, input")) return;
+  const text = event.clipboardData?.getData("text") || "";
+  if (!text.trim()) return;
+  event.preventDefault();
+  setText(text);
+  showStatus("Metin yapıştırıldı.");
+});
 settingsToggle.addEventListener("click", () => setSettingsOpen(!document.body.classList.contains("settings-open")));
 settingsClose.addEventListener("click", () => setSettingsOpen(false));
 settingsBackdrop.addEventListener("click", () => setSettingsOpen(false));

@@ -47,13 +47,16 @@
           <button id="forwardBtn" class="icon-button" type="button" title="İleri al" aria-label="İleri al">
             <span aria-hidden="true">↷</span>
           </button>
-          <button id="resetBtn" class="ghost-button" type="button">Sıfırla</button>
         </div>
 
         <div class="quick-bar" aria-label="Hızlı ayarlar">
-          <button id="fontDownBtn" class="ghost-button" type="button" aria-label="Yazıyı küçült">A−</button>
-          <span id="quickFontSize" class="quick-size">72 px</span>
-          <button id="fontUpBtn" class="ghost-button" type="button" aria-label="Yazıyı büyüt">A+</button>
+          <button id="quickPasteBtn" class="ghost-button" type="button">📋 Yapıştır</button>
+          <button id="quickUrlBtn" class="ghost-button" type="button">🔗 Bağlantı</button>
+          <label class="quick-font">
+            <span aria-hidden="true">A</span>
+            <input id="quickFontInput" type="range" min="20" max="128" step="2" value="72" aria-label="Yazı büyüklüğü" />
+            <span id="quickFontSize" class="quick-size">72 px</span>
+          </label>
           <button id="settingsToggle" class="ghost-button settings-toggle" type="button" aria-expanded="false" aria-controls="settingsPanel">☰ Ayarlar</button>
         </div>
       </section>
@@ -64,10 +67,27 @@
           <strong>Ayarlar</strong>
           <button id="settingsClose" class="ghost-button" type="button" aria-label="Ayarları kapat">Kapat</button>
         </div>
-        <label class="field-block">
-          <span>Metin</span>
+        <div class="field-block">
+          <div class="field-head">
+            <label for="sourceText">Metin</label>
+            <div class="field-actions">
+              <button id="pasteBtn" class="ghost-button small" type="button">📋 Yapıştır</button>
+              <button id="clearBtn" class="ghost-button small" type="button">Temizle</button>
+            </div>
+          </div>
           <textarea id="sourceText" spellcheck="false"></textarea>
-        </label>
+          <p id="textStatus" class="text-status" role="status"></p>
+        </div>
+
+        <form id="urlForm" class="field-block">
+          <label for="urlInput">Makale bağlantısı</label>
+          <div class="url-row">
+            <input id="urlInput" type="url" inputmode="url" placeholder="https://..." autocomplete="off" />
+            <button id="urlBtn" class="ghost-button small" type="submit">Getir</button>
+          </div>
+        </form>
+
+        <button id="resetBtn" class="ghost-button" type="button">↺ Sıfırla (başa dön)</button>
 
         <div class="setting-grid">
           <label class="field-block">
@@ -183,6 +203,7 @@
       </aside>
     </main>
 
+    <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
     <script src="app.js"></script>
   </body>
 </html>
