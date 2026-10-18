@@ -15,6 +15,10 @@ const playText = document.getElementById("playText");
 const backBtn = document.getElementById("backBtn");
 const forwardBtn = document.getElementById("forwardBtn");
 const resetBtn = document.getElementById("resetBtn");
+const pasteBtn = document.getElementById("pasteBtn");
+const quickPasteBtn = document.getElementById("quickPasteBtn");
+const clearBtn = document.getElementById("clearBtn");
+const textStatus = document.getElementById("textStatus");
 const wpmInput = document.getElementById("wpmInput");
 const groupSize = document.getElementById("groupSize");
 const comprehensionInput = document.getElementById("comprehensionInput");
@@ -343,6 +347,46 @@ function reset() {
   render();
 }
 
+let statusTimer = null;
+
+function showStatus(message) {
+  textStatus.textContent = message;
+  window.clearTimeout(statusTimer);
+  statusTimer = window.setTimeout(() => {
+    textStatus.textContent = "";
+  }, 3000);
+}
+
+function setText(text) {
+  stop(false);
+  sourceText.value = text;
+  rebuild(false);
+}
+
+function clearText() {
+  setText("");
+  sourceText.focus();
+  showStatus("Metin temizlendi.");
+}
+
+async function pasteFromClipboard() {
+  try {
+    const text = await navigator.clipboard.readText();
+    if (!text.trim()) {
+      showStatus("Panoda metin yok.");
+      return;
+    }
+    setText(text);
+    showStatus("Panodaki metin yapıştırıldı.");
+  } catch {
+    // Clipboard read blocked (permission or insecure context): fall back to manual paste.
+    setSettingsOpen(true);
+    sourceText.focus();
+    sourceText.select();
+    showStatus("Pano erişimi yok; metni elle yapıştırın (Ctrl/Cmd+V).");
+  }
+}
+
 function applyReadingStyle() {
   const root = document.documentElement;
   const fontSize = `${fontSizeInput.value}px`;
@@ -426,6 +470,9 @@ playBtn.addEventListener("click", togglePlay);
 backBtn.addEventListener("click", () => move(-1));
 forwardBtn.addEventListener("click", () => move(1));
 resetBtn.addEventListener("click", reset);
+pasteBtn.addEventListener("click", pasteFromClipboard);
+quickPasteBtn.addEventListener("click", pasteFromClipboard);
+clearBtn.addEventListener("click", clearText);
 
 function stepFontSize(delta) {
   const next = clamp(Number(fontSizeInput.value) + delta, Number(fontSizeInput.min), Number(fontSizeInput.max));

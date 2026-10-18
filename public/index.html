@@ -47,10 +47,10 @@
           <button id="forwardBtn" class="icon-button" type="button" title="İleri al" aria-label="İleri al">
             <span aria-hidden="true">↷</span>
           </button>
-          <button id="resetBtn" class="ghost-button" type="button">Sıfırla</button>
         </div>
 
         <div class="quick-bar" aria-label="Hızlı ayarlar">
+          <button id="quickPasteBtn" class="ghost-button" type="button">📋 Yapıştır</button>
           <button id="fontDownBtn" class="ghost-button" type="button" aria-label="Yazıyı küçült">A−</button>
           <span id="quickFontSize" class="quick-size">72 px</span>
           <button id="fontUpBtn" class="ghost-button" type="button" aria-label="Yazıyı büyüt">A+</button>
@@ -64,10 +64,19 @@
           <strong>Ayarlar</strong>
           <button id="settingsClose" class="ghost-button" type="button" aria-label="Ayarları kapat">Kapat</button>
         </div>
-        <label class="field-block">
-          <span>Metin</span>
+        <div class="field-block">
+          <div class="field-head">
+            <label for="sourceText">Metin</label>
+            <div class="field-actions">
+              <button id="pasteBtn" class="ghost-button small" type="button">📋 Yapıştır</button>
+              <button id="clearBtn" class="ghost-button small" type="button">Temizle</button>
+            </div>
+          </div>
           <textarea id="sourceText" spellcheck="false"></textarea>
-        </label>
+          <p id="textStatus" class="text-status" role="status"></p>
+        </div>
+
+        <button id="resetBtn" class="ghost-button" type="button">↺ Sıfırla (başa dön)</button>
 
         <div class="setting-grid">
           <label class="field-block">
