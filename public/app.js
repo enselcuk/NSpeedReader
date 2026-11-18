@@ -237,6 +237,16 @@ function renderWordDisplay(chunk) {
     return;
   }
 
+  wordDisplay.classList.remove("pivot-mode");
+  if (focusLetterInput.checked) {
+    const rows = chunk.words.map(createPivotRow);
+    if (rows.every(Boolean)) {
+      wordDisplay.classList.add("pivot-mode");
+      wordDisplay.append(...rows);
+      return;
+    }
+  }
+
   chunk.words.forEach((word, index) => {
     if (index > 0) {
       const space = document.createElement("span");
@@ -252,32 +262,24 @@ function createWordToken(word) {
   const token = document.createElement("span");
   token.className = "word-token";
 
-  if (!focusLetterInput.checked) {
-    token.textContent = word;
-    return token;
-  }
-
-  const letters = Array.from(word);
-  const visibleLetters = letters
-    .map((letter, index) => ({ letter, index }))
-    .filter(({ letter }) => /\p{L}|\p{N}/u.test(letter));
-
-  if (visibleLetters.length < 2) {
-    token.textContent = word;
-    return token;
-  }
-
-  const focusVisibleIndex = getFocusIndex(visibleLetters.length);
-  const focusIndex = visibleLetters[focusVisibleIndex].index;
-
-  letters.forEach((letter, index) => {
-    const span = document.createElement("span");
-    span.textContent = letter;
-    if (index === focusIndex) span.className = "focus-letter";
-    token.append(span);
-  });
-
+  token.textContent = word;
   return token;
+}
+
+function createPivotRow(word) {
+  const letters = Array.from(word);
+  const visible = letters.map((letter, index) => ({ letter, index })).filter(({ letter }) => /\p{L}|\p{N}/u.test(letter));
+  if (!visible.length) return null;
+  const pivot = visible[getFocusIndex(visible.length)].index;
+  const row = document.createElement("div");
+  row.className = "pivot-row";
+  [["pivot-before", letters.slice(0, pivot).join("")], ["pivot-letter", letters[pivot]], ["pivot-after", letters.slice(pivot + 1).join("")]].forEach(([className, text]) => {
+    const span = document.createElement("span");
+    span.className = className;
+    span.textContent = text;
+    row.append(span);
+  });
+  return row;
 }
 
 function getFocusIndex(length) {

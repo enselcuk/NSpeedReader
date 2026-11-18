@@ -52,6 +52,11 @@
         </div>
 
         <div class="quick-bar" aria-label="Hızlı ayarlar">
+          <div class="url-import">
+          <input id="urlInput" type="url" inputmode="url" autocomplete="off" placeholder="Sayfa adresi (https://…)" aria-label="Sayfa adresi" />
+          <button id="urlBtn" class="ghost-button" type="button">Getir</button>
+        </div>
+        <p id="urlStatus" class="url-status" role="status" hidden></p>
           <div class="quick-row">
             <span class="quick-label">Hız</span>
             <input id="quickWpmRange" class="quick-range" type="range" min="80" max="900" step="10" value="360" aria-label="Okuma hızı" />
@@ -81,11 +86,6 @@
           <button id="pasteBtn" class="ghost-button" type="button">Yapıştır</button>
           <button id="clearBtn" class="ghost-button" type="button">Temizle</button>
         </div>
-        <div class="url-import">
-          <input id="urlInput" type="url" inputmode="url" autocomplete="off" placeholder="Sayfa adresi (https://…)" aria-label="Sayfa adresi" />
-          <button id="urlBtn" class="ghost-button" type="button">Getir</button>
-        </div>
-        <p id="urlStatus" class="url-status" role="status" hidden></p>
 
         <div class="setting-grid">
           <label class="field-block">

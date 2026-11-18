@@ -195,8 +195,36 @@ h1 {
   width: 0.36em;
 }
 
-.focus-letter {
-  color: var(--focus-letter);
+/* Sabit odak: kelimenin odak harfi her zaman ekranın tam ortasında durur,
+   renk değişmez; üst/alt işaretler gözü tek noktaya sabitler. */
+.word-display.pivot-mode {
+  flex-direction: column;
+  flex-wrap: nowrap;
+}
+
+.pivot-row {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  width: 100%;
+}
+
+.pivot-before { text-align: right; white-space: pre; }
+.pivot-after { text-align: left; white-space: pre; }
+.pivot-letter { text-align: center; }
+
+.stage:has(.pivot-mode)::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 2px;
+  height: min(calc(var(--reader-size) * 1.9), 90%);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 0;
+  background: linear-gradient(180deg, var(--focus-letter) 0 14%, transparent 14% 86%, var(--focus-letter) 86% 100%);
+  opacity: 0.55;
 }
 
 .context {
