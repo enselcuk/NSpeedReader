@@ -8,10 +8,9 @@ const progressLabel = document.getElementById("progressLabel");
 const progressBar = document.getElementById("progressBar");
 const positionSlider = document.getElementById("positionSlider");
 const positionLabel = document.getElementById("positionLabel");
-const pauseLabel = document.getElementById("pauseLabel");
+const miniStats = document.getElementById("miniStats");
 const playBtn = document.getElementById("playBtn");
 const playIcon = document.getElementById("playIcon");
-const playText = document.getElementById("playText");
 const backBtn = document.getElementById("backBtn");
 const forwardBtn = document.getElementById("forwardBtn");
 const resetBtn = document.getElementById("resetBtn");
@@ -34,8 +33,14 @@ const wordCount = document.getElementById("wordCount");
 const durationLabel = document.getElementById("durationLabel");
 const chunkCount = document.getElementById("chunkCount");
 const quickFontSize = document.getElementById("quickFontSize");
-const fontDownBtn = document.getElementById("fontDownBtn");
-const fontUpBtn = document.getElementById("fontUpBtn");
+const quickFontRange = document.getElementById("quickFontRange");
+const quickWpmRange = document.getElementById("quickWpmRange");
+const quickWpm = document.getElementById("quickWpm");
+const urlInput = document.getElementById("urlInput");
+const urlBtn = document.getElementById("urlBtn");
+const urlStatus = document.getElementById("urlStatus");
+const pasteBtn = document.getElementById("pasteBtn");
+const clearBtn = document.getElementById("clearBtn");
 const settingsToggle = document.getElementById("settingsToggle");
 const settingsClose = document.getElementById("settingsClose");
 const settingsBackdrop = document.getElementById("settingsBackdrop");
@@ -209,12 +214,15 @@ function render() {
   nextText.textContent = chunks[currentIndex + 1]?.text || "";
   positionSlider.value = String(currentIndex);
   positionLabel.textContent = chunks.length ? `${currentIndex + 1} / ${chunks.length}` : "0 / 0";
-  pauseLabel.textContent = chunk ? `Duraklama: ${getDelay(chunk)} ms` : "Duraklama: 0 ms";
   progressLabel.textContent = `${progress}%`;
   progressBar.style.width = `${progress}%`;
   wordCount.textContent = String(totalWords);
   chunkCount.textContent = String(chunks.length);
   durationLabel.textContent = formatDuration(estimateDuration());
+  miniStats.textContent = `${totalWords} kelime · ${durationLabel.textContent}`;
+  const wpm = clamp(Number(wpmInput.value) || 360, 80, 900);
+  quickWpm.textContent = `${wpm} kel/dk`;
+  if (quickWpmRange.value !== String(wpm)) quickWpmRange.value = String(wpm);
   backBtn.disabled = currentIndex <= 0;
   forwardBtn.disabled = currentIndex >= chunks.length - 1;
   positionSlider.disabled = chunks.length === 0;
@@ -227,6 +235,16 @@ function renderWordDisplay(chunk) {
   if (!chunk) {
     wordDisplay.textContent = "Metin yok";
     return;
+  }
+
+  wordDisplay.classList.remove("pivot-mode");
+  if (focusLetterInput.checked) {
+    const rows = chunk.words.map(createPivotRow);
+    if (rows.every(Boolean)) {
+      wordDisplay.classList.add("pivot-mode");
+      wordDisplay.append(...rows);
+      return;
+    }
   }
 
   chunk.words.forEach((word, index) => {
@@ -244,32 +262,24 @@ function createWordToken(word) {
   const token = document.createElement("span");
   token.className = "word-token";
 
-  if (!focusLetterInput.checked) {
-    token.textContent = word;
-    return token;
-  }
-
-  const letters = Array.from(word);
-  const visibleLetters = letters
-    .map((letter, index) => ({ letter, index }))
-    .filter(({ letter }) => /\p{L}|\p{N}/u.test(letter));
-
-  if (visibleLetters.length < 2) {
-    token.textContent = word;
-    return token;
-  }
-
-  const focusVisibleIndex = getFocusIndex(visibleLetters.length);
-  const focusIndex = visibleLetters[focusVisibleIndex].index;
-
-  letters.forEach((letter, index) => {
-    const span = document.createElement("span");
-    span.textContent = letter;
-    if (index === focusIndex) span.className = "focus-letter";
-    token.append(span);
-  });
-
+  token.textContent = word;
   return token;
+}
+
+function createPivotRow(word) {
+  const letters = Array.from(word);
+  const visible = letters.map((letter, index) => ({ letter, index })).filter(({ letter }) => /\p{L}|\p{N}/u.test(letter));
+  if (!visible.length) return null;
+  const pivot = visible[getFocusIndex(visible.length)].index;
+  const row = document.createElement("div");
+  row.className = "pivot-row";
+  [["pivot-before", letters.slice(0, pivot).join("")], ["pivot-letter", letters[pivot]], ["pivot-after", letters.slice(pivot + 1).join("")]].forEach(([className, text]) => {
+    const span = document.createElement("span");
+    span.className = className;
+    span.textContent = text;
+    row.append(span);
+  });
+  return row;
 }
 
 function getFocusIndex(length) {
@@ -295,7 +305,7 @@ function play() {
   stop(false);
   playBtn.dataset.playing = "true";
   playIcon.textContent = "⏸";
-  playText.textContent = "Duraklat";
+  playBtn.setAttribute("aria-label", "Duraklat");
   scheduleNext();
 }
 
@@ -322,7 +332,7 @@ function stop(renderAfter = true) {
   timer = null;
   playBtn.dataset.playing = "false";
   playIcon.textContent = "▶";
-  playText.textContent = "Oynat";
+  playBtn.setAttribute("aria-label", "Oynat");
   if (renderAfter) render();
 }
 
@@ -339,8 +349,10 @@ function move(delta) {
 
 function reset() {
   stop(false);
+  sourceText.value = "";
+  textIsSample = false;
   currentIndex = 0;
-  render();
+  rebuild(false);
 }
 
 function applyReadingStyle() {
@@ -350,6 +362,7 @@ function applyReadingStyle() {
   root.style.setProperty("--reader-size", fontSize);
   fontSizeValue.textContent = fontSize.replace("px", " px");
   quickFontSize.textContent = fontSizeValue.textContent;
+  quickFontRange.value = fontSizeInput.value;
   render();
 }
 
@@ -427,21 +440,87 @@ backBtn.addEventListener("click", () => move(-1));
 forwardBtn.addEventListener("click", () => move(1));
 resetBtn.addEventListener("click", reset);
 
-function stepFontSize(delta) {
-  const next = clamp(Number(fontSizeInput.value) + delta, Number(fontSizeInput.min), Number(fontSizeInput.max));
-  fontSizeInput.value = String(next);
-  applyReadingStyle();
-}
-
 function setSettingsOpen(open) {
   document.body.classList.toggle("settings-open", open);
   settingsBackdrop.hidden = !open;
   settingsToggle.setAttribute("aria-expanded", String(open));
-  if (open) window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
-fontDownBtn.addEventListener("click", () => stepFontSize(-4));
-fontUpBtn.addEventListener("click", () => stepFontSize(4));
+quickWpmRange.addEventListener("input", () => {
+  wpmInput.value = quickWpmRange.value;
+  render();
+});
+
+quickFontRange.addEventListener("input", () => {
+  fontSizeInput.value = quickFontRange.value;
+  applyReadingStyle();
+});
+
+// Örnek metin duruyorsa odaklanınca tamamını seç; yapıştırınca doğrudan yerine geçer.
+let textIsSample = true;
+sourceText.addEventListener("focus", () => {
+  if (textIsSample) sourceText.select();
+});
+sourceText.addEventListener("input", () => {
+  textIsSample = false;
+});
+clearBtn.addEventListener("click", () => {
+  sourceText.value = "";
+  textIsSample = false;
+  rebuild(true);
+  sourceText.focus();
+});
+pasteBtn.addEventListener("click", async () => {
+  try {
+    sourceText.value = await navigator.clipboard.readText();
+    textIsSample = false;
+    rebuild(true);
+  } catch {
+    sourceText.value = "";
+    textIsSample = false;
+    rebuild(true);
+    sourceText.focus();
+  }
+});
+function setUrlStatus(message, isError = false) {
+  urlStatus.hidden = !message;
+  urlStatus.textContent = message;
+  urlStatus.style.color = isError ? "#b42318" : "";
+}
+
+async function importFromUrl() {
+  let address = urlInput.value.trim();
+  if (!address) {
+    setUrlStatus("Bir sayfa adresi girin.", true);
+    return;
+  }
+  if (!/^https?:\/\//i.test(address)) address = `https://${address}`;
+
+  urlBtn.disabled = true;
+  setUrlStatus("Sayfa getiriliyor…");
+  try {
+    const response = await fetch(`/api/extract?url=${encodeURIComponent(address)}`);
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.error || "Sayfa alınamadı.");
+
+    stop(false);
+    sourceText.value = data.title && !data.text.startsWith(data.title) ? `${data.title}\n\n${data.text}` : data.text;
+    textIsSample = false;
+    currentIndex = 0;
+    rebuild(false);
+    setUrlStatus(`"${data.title || address}" yüklendi (${wordCount.textContent} kelime).`);
+    setSettingsOpen(false);
+  } catch (error) {
+    setUrlStatus(error.message || "Sayfa alınamadı.", true);
+  } finally {
+    urlBtn.disabled = false;
+  }
+}
+
+urlBtn.addEventListener("click", importFromUrl);
+urlInput.addEventListener("keydown", (event) => {
+  if (event.key === "Enter") importFromUrl();
+});
 settingsToggle.addEventListener("click", () => setSettingsOpen(!document.body.classList.contains("settings-open")));
 settingsClose.addEventListener("click", () => setSettingsOpen(false));
 settingsBackdrop.addEventListener("click", () => setSettingsOpen(false));

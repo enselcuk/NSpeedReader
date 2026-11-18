@@ -32,7 +32,7 @@
           <input id="positionSlider" type="range" min="0" max="0" value="0" aria-label="Konum" />
           <div class="meta-row">
             <span id="positionLabel">0 / 0</span>
-            <span id="pauseLabel">Duraklama: 0 ms</span>
+            <span id="miniStats" class="mini-stats">0 kelime · 0:00</span>
           </div>
         </div>
 
@@ -40,21 +40,35 @@
           <button id="backBtn" class="icon-button" type="button" title="Geri al" aria-label="Geri al">
             <span aria-hidden="true">↶</span>
           </button>
-          <button id="playBtn" class="primary-button" type="button">
+          <button id="playBtn" class="primary-button" type="button" title="Oynat / Duraklat" aria-label="Oynat">
             <span id="playIcon" aria-hidden="true">▶</span>
-            <span id="playText">Oynat</span>
           </button>
           <button id="forwardBtn" class="icon-button" type="button" title="İleri al" aria-label="İleri al">
             <span aria-hidden="true">↷</span>
           </button>
-          <button id="resetBtn" class="ghost-button" type="button">Sıfırla</button>
+          <button id="resetBtn" class="icon-button reset-button" type="button" title="Sıfırla: metni temizle" aria-label="Sıfırla">
+            <span aria-hidden="true">✕</span>
+          </button>
         </div>
 
         <div class="quick-bar" aria-label="Hızlı ayarlar">
-          <button id="fontDownBtn" class="ghost-button" type="button" aria-label="Yazıyı küçült">A−</button>
-          <span id="quickFontSize" class="quick-size">72 px</span>
-          <button id="fontUpBtn" class="ghost-button" type="button" aria-label="Yazıyı büyüt">A+</button>
-          <button id="settingsToggle" class="ghost-button settings-toggle" type="button" aria-expanded="false" aria-controls="settingsPanel">☰ Ayarlar</button>
+          <div class="url-import">
+          <input id="urlInput" type="url" inputmode="url" autocomplete="off" placeholder="Sayfa adresi (https://…)" aria-label="Sayfa adresi" />
+          <button id="urlBtn" class="ghost-button" type="button">Getir</button>
+        </div>
+        <p id="urlStatus" class="url-status" role="status" hidden></p>
+          <div class="quick-row">
+            <span class="quick-label">Hız</span>
+            <input id="quickWpmRange" class="quick-range" type="range" min="80" max="900" step="10" value="360" aria-label="Okuma hızı" />
+            <span id="quickWpm" class="quick-size">360 kel/dk</span>
+          </div>
+          <div class="quick-row">
+            <span class="quick-a quick-a-small" aria-hidden="true">A</span>
+            <input id="quickFontRange" class="quick-range" type="range" min="20" max="128" step="2" value="72" aria-label="Yazı büyüklüğü" />
+            <span class="quick-a quick-a-big" aria-hidden="true">A</span>
+            <span id="quickFontSize" class="quick-size">72 px</span>
+            <button id="settingsToggle" class="ghost-button settings-toggle" type="button" aria-expanded="false" aria-controls="settingsPanel" aria-label="Ayarlar">☰</button>
+          </div>
         </div>
       </section>
 
@@ -66,8 +80,12 @@
         </div>
         <label class="field-block">
           <span>Metin</span>
-          <textarea id="sourceText" spellcheck="false"></textarea>
+          <textarea id="sourceText" spellcheck="false" placeholder="Okumak istediğiniz metni buraya yapıştırın…"></textarea>
         </label>
+        <div class="text-actions">
+          <button id="pasteBtn" class="ghost-button" type="button">Yapıştır</button>
+          <button id="clearBtn" class="ghost-button" type="button">Temizle</button>
+        </div>
 
         <div class="setting-grid">
           <label class="field-block">
