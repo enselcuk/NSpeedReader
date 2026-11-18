@@ -8,10 +8,9 @@ const progressLabel = document.getElementById("progressLabel");
 const progressBar = document.getElementById("progressBar");
 const positionSlider = document.getElementById("positionSlider");
 const positionLabel = document.getElementById("positionLabel");
-const pauseLabel = document.getElementById("pauseLabel");
+const miniStats = document.getElementById("miniStats");
 const playBtn = document.getElementById("playBtn");
 const playIcon = document.getElementById("playIcon");
-const playText = document.getElementById("playText");
 const backBtn = document.getElementById("backBtn");
 const forwardBtn = document.getElementById("forwardBtn");
 const resetBtn = document.getElementById("resetBtn");
@@ -35,6 +34,11 @@ const durationLabel = document.getElementById("durationLabel");
 const chunkCount = document.getElementById("chunkCount");
 const quickFontSize = document.getElementById("quickFontSize");
 const quickFontRange = document.getElementById("quickFontRange");
+const quickWpmRange = document.getElementById("quickWpmRange");
+const quickWpm = document.getElementById("quickWpm");
+const urlInput = document.getElementById("urlInput");
+const urlBtn = document.getElementById("urlBtn");
+const urlStatus = document.getElementById("urlStatus");
 const pasteBtn = document.getElementById("pasteBtn");
 const clearBtn = document.getElementById("clearBtn");
 const settingsToggle = document.getElementById("settingsToggle");
@@ -210,12 +214,15 @@ function render() {
   nextText.textContent = chunks[currentIndex + 1]?.text || "";
   positionSlider.value = String(currentIndex);
   positionLabel.textContent = chunks.length ? `${currentIndex + 1} / ${chunks.length}` : "0 / 0";
-  pauseLabel.textContent = chunk ? `Duraklama: ${getDelay(chunk)} ms` : "Duraklama: 0 ms";
   progressLabel.textContent = `${progress}%`;
   progressBar.style.width = `${progress}%`;
   wordCount.textContent = String(totalWords);
   chunkCount.textContent = String(chunks.length);
   durationLabel.textContent = formatDuration(estimateDuration());
+  miniStats.textContent = `${totalWords} kelime · ${durationLabel.textContent}`;
+  const wpm = clamp(Number(wpmInput.value) || 360, 80, 900);
+  quickWpm.textContent = `${wpm} kel/dk`;
+  if (quickWpmRange.value !== String(wpm)) quickWpmRange.value = String(wpm);
   backBtn.disabled = currentIndex <= 0;
   forwardBtn.disabled = currentIndex >= chunks.length - 1;
   positionSlider.disabled = chunks.length === 0;
@@ -296,7 +303,7 @@ function play() {
   stop(false);
   playBtn.dataset.playing = "true";
   playIcon.textContent = "⏸";
-  playText.textContent = "Duraklat";
+  playBtn.setAttribute("aria-label", "Duraklat");
   scheduleNext();
 }
 
@@ -323,7 +330,7 @@ function stop(renderAfter = true) {
   timer = null;
   playBtn.dataset.playing = "false";
   playIcon.textContent = "▶";
-  playText.textContent = "Oynat";
+  playBtn.setAttribute("aria-label", "Oynat");
   if (renderAfter) render();
 }
 
@@ -340,8 +347,10 @@ function move(delta) {
 
 function reset() {
   stop(false);
+  sourceText.value = "";
+  textIsSample = false;
   currentIndex = 0;
-  render();
+  rebuild(false);
 }
 
 function applyReadingStyle() {
@@ -435,6 +444,11 @@ function setSettingsOpen(open) {
   settingsToggle.setAttribute("aria-expanded", String(open));
 }
 
+quickWpmRange.addEventListener("input", () => {
+  wpmInput.value = quickWpmRange.value;
+  render();
+});
+
 quickFontRange.addEventListener("input", () => {
   fontSizeInput.value = quickFontRange.value;
   applyReadingStyle();
@@ -465,6 +479,45 @@ pasteBtn.addEventListener("click", async () => {
     rebuild(true);
     sourceText.focus();
   }
+});
+function setUrlStatus(message, isError = false) {
+  urlStatus.hidden = !message;
+  urlStatus.textContent = message;
+  urlStatus.style.color = isError ? "#b42318" : "";
+}
+
+async function importFromUrl() {
+  let address = urlInput.value.trim();
+  if (!address) {
+    setUrlStatus("Bir sayfa adresi girin.", true);
+    return;
+  }
+  if (!/^https?:\/\//i.test(address)) address = `https://${address}`;
+
+  urlBtn.disabled = true;
+  setUrlStatus("Sayfa getiriliyor…");
+  try {
+    const response = await fetch(`/api/extract?url=${encodeURIComponent(address)}`);
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.error || "Sayfa alınamadı.");
+
+    stop(false);
+    sourceText.value = data.title && !data.text.startsWith(data.title) ? `${data.title}\n\n${data.text}` : data.text;
+    textIsSample = false;
+    currentIndex = 0;
+    rebuild(false);
+    setUrlStatus(`"${data.title || address}" yüklendi (${wordCount.textContent} kelime).`);
+    setSettingsOpen(false);
+  } catch (error) {
+    setUrlStatus(error.message || "Sayfa alınamadı.", true);
+  } finally {
+    urlBtn.disabled = false;
+  }
+}
+
+urlBtn.addEventListener("click", importFromUrl);
+urlInput.addEventListener("keydown", (event) => {
+  if (event.key === "Enter") importFromUrl();
 });
 settingsToggle.addEventListener("click", () => setSettingsOpen(!document.body.classList.contains("settings-open")));
 settingsClose.addEventListener("click", () => setSettingsOpen(false));

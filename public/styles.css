@@ -433,14 +433,60 @@ input[type="color"]:focus {
 }
 
 .quick-bar {
+  display: grid;
+  gap: 6px;
+}
+
+.quick-row {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
 }
 
-.quick-bar .ghost-button {
-  min-width: 52px;
+.quick-label {
+  min-width: 28px;
+  color: var(--muted);
+  font-weight: 800;
+  font-size: 0.9rem;
+}
+
+.quick-row .settings-toggle {
+  min-width: 46px;
+  min-height: 40px;
+  padding: 0 12px;
+}
+
+.mini-stats {
+  font-variant-numeric: tabular-nums;
+}
+
+.reset-button {
+  width: 40px;
+  min-height: 40px;
+  font-size: 1rem;
+  color: var(--muted);
+}
+
+.url-import {
+  display: flex;
+  gap: 10px;
+}
+
+.url-import input {
+  flex: 1;
+  min-width: 0;
+  min-height: 46px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font: inherit;
+}
+
+.url-status {
+  margin: -6px 0 0;
+  color: var(--muted);
+  font-size: 0.85rem;
 }
 
 .quick-range {
@@ -465,7 +511,7 @@ input[type="color"]:focus {
 }
 
 .quick-size {
-  min-width: 56px;
+  min-width: 72px;
   text-align: center;
   color: var(--muted);
   font-weight: 700;
@@ -490,7 +536,7 @@ input[type="color"]:focus {
   .settings-toggle {
     display: inline-flex;
     align-items: center;
-    margin-left: auto;
+    justify-content: center;
   }
 
   .settings-panel {
@@ -580,17 +626,6 @@ input[type="color"]:focus {
     top: -16px;
     margin: -16px -16px 0;
     padding: 12px 16px;
-  }
-
-  .quick-bar {
-    flex-wrap: wrap;
-    row-gap: 8px;
-  }
-
-  .settings-toggle {
-    flex: 1 0 100%;
-    justify-content: center;
-    margin-left: 0;
   }
 
   h1 {
