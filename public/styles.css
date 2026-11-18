@@ -46,6 +46,24 @@ button {
   cursor: pointer;
 }
 
+button,
+input,
+select,
+textarea,
+label {
+  touch-action: manipulation;
+}
+
+.text-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: -6px;
+}
+
+.text-actions .ghost-button {
+  flex: 1;
+}
+
 .app-shell {
   width: min(1220px, calc(100vw - 32px));
   min-height: calc(100vh - 48px);
@@ -425,6 +443,27 @@ input[type="color"]:focus {
   min-width: 52px;
 }
 
+.quick-range {
+  flex: 1 1 140px;
+  max-width: 320px;
+  min-width: 100px;
+  height: 36px;
+}
+
+.quick-a {
+  color: var(--muted);
+  font-weight: 800;
+  line-height: 1;
+}
+
+.quick-a-small {
+  font-size: 0.8rem;
+}
+
+.quick-a-big {
+  font-size: 1.4rem;
+}
+
 .quick-size {
   min-width: 56px;
   text-align: center;
@@ -511,10 +550,30 @@ input[type="color"]:focus {
     padding: 16px;
   }
 
+  body {
+    min-height: 0;
+    display: flow-root;
+  }
+
+  .app-shell {
+    min-height: 0;
+    height: calc(100dvh - 20px);
+  }
+
   .reader-panel {
-    min-height: calc(100vh - 20px);
-    grid-template-rows: auto minmax(200px, 1fr) auto auto auto;
-    gap: 16px;
+    min-height: 0;
+    height: 100%;
+    grid-template-rows: auto minmax(0, 1fr) auto auto auto;
+    gap: 12px;
+    padding: 14px;
+  }
+
+  .topbar {
+    gap: 8px;
+  }
+
+  .eyebrow {
+    display: none;
   }
 
   .sheet-header {
@@ -525,6 +584,13 @@ input[type="color"]:focus {
 
   .quick-bar {
     flex-wrap: wrap;
+    row-gap: 8px;
+  }
+
+  .settings-toggle {
+    flex: 1 0 100%;
+    justify-content: center;
+    margin-left: 0;
   }
 
   h1 {

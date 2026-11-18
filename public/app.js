@@ -34,8 +34,9 @@ const wordCount = document.getElementById("wordCount");
 const durationLabel = document.getElementById("durationLabel");
 const chunkCount = document.getElementById("chunkCount");
 const quickFontSize = document.getElementById("quickFontSize");
-const fontDownBtn = document.getElementById("fontDownBtn");
-const fontUpBtn = document.getElementById("fontUpBtn");
+const quickFontRange = document.getElementById("quickFontRange");
+const pasteBtn = document.getElementById("pasteBtn");
+const clearBtn = document.getElementById("clearBtn");
 const settingsToggle = document.getElementById("settingsToggle");
 const settingsClose = document.getElementById("settingsClose");
 const settingsBackdrop = document.getElementById("settingsBackdrop");
@@ -350,6 +351,7 @@ function applyReadingStyle() {
   root.style.setProperty("--reader-size", fontSize);
   fontSizeValue.textContent = fontSize.replace("px", " px");
   quickFontSize.textContent = fontSizeValue.textContent;
+  quickFontRange.value = fontSizeInput.value;
   render();
 }
 
@@ -427,21 +429,43 @@ backBtn.addEventListener("click", () => move(-1));
 forwardBtn.addEventListener("click", () => move(1));
 resetBtn.addEventListener("click", reset);
 
-function stepFontSize(delta) {
-  const next = clamp(Number(fontSizeInput.value) + delta, Number(fontSizeInput.min), Number(fontSizeInput.max));
-  fontSizeInput.value = String(next);
-  applyReadingStyle();
-}
-
 function setSettingsOpen(open) {
   document.body.classList.toggle("settings-open", open);
   settingsBackdrop.hidden = !open;
   settingsToggle.setAttribute("aria-expanded", String(open));
-  if (open) window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
-fontDownBtn.addEventListener("click", () => stepFontSize(-4));
-fontUpBtn.addEventListener("click", () => stepFontSize(4));
+quickFontRange.addEventListener("input", () => {
+  fontSizeInput.value = quickFontRange.value;
+  applyReadingStyle();
+});
+
+// Örnek metin duruyorsa odaklanınca tamamını seç; yapıştırınca doğrudan yerine geçer.
+let textIsSample = true;
+sourceText.addEventListener("focus", () => {
+  if (textIsSample) sourceText.select();
+});
+sourceText.addEventListener("input", () => {
+  textIsSample = false;
+});
+clearBtn.addEventListener("click", () => {
+  sourceText.value = "";
+  textIsSample = false;
+  rebuild(true);
+  sourceText.focus();
+});
+pasteBtn.addEventListener("click", async () => {
+  try {
+    sourceText.value = await navigator.clipboard.readText();
+    textIsSample = false;
+    rebuild(true);
+  } catch {
+    sourceText.value = "";
+    textIsSample = false;
+    rebuild(true);
+    sourceText.focus();
+  }
+});
 settingsToggle.addEventListener("click", () => setSettingsOpen(!document.body.classList.contains("settings-open")));
 settingsClose.addEventListener("click", () => setSettingsOpen(false));
 settingsBackdrop.addEventListener("click", () => setSettingsOpen(false));
