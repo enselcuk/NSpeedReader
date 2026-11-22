@@ -14,3 +14,6 @@ Thumbs.db
 .cache/
 dist/
 build/
+
+# Wrangler local state
+.wrangler/
